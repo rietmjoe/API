@@ -14,6 +14,7 @@ API_KEY = "Key"
 def get_api_data(endpoint, object_id=None):
     headers = {
         'x-api-key': 'Key',  
+        # heisst evtl auch anders... Hier hatte ich Mühe
     }
     url = f"{BASE_URL}/{endpoint}"
     if object_id:
