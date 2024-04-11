@@ -1,4 +1,5 @@
 import streamlit as st
+import requests
 
 
 # Streamlit starten
@@ -16,47 +17,92 @@ import streamlit as st
 # streamlit run app.py
 
 
-
 # Setze die Seitenkonfiguration
 st.set_page_config(page_title="Entdecke lokale Aktivitäten", layout="wide")
 
-
-# Pagegestaltung Header
+# Header-Bild
 st.image("berg2.jpg", use_column_width=True)
 
-# Stelle das Logo dar
-col1, col2 = st.columns([1, 3])
+# Logo und Titel
+col1, col2 = st.columns([1, 8])
 with col1:
     st.image("st_logo.png", width=50)  
 with col2:
-    st.write("")
-
-st.title("Entdecke, was du in deiner Nähe unternehmen kannst!")
-st.subheader("Gib deinen Standort und das Wetter ein, und wir schlagen dir vor, was du unternehmen kannst.")
-
-
-
+    st.title("Entdecke, was du in deiner Nähe unternehmen kannst!")
+    st.subheader("Gib deinen Standort und das Wetter ein, und wir schlagen dir vor, was du unternehmen kannst.")
 
 # Benutzereingaben
 with st.form("user_input"):
-
-    # Sie hend no irgend e Kategorie wölle. Luegemer mol was machbar isch.
-    category = st.selectbox("Was suchst du?", ["Kultur", "Sport", "Touristenattraktion"])
-
-    # PLZ Eingabe mit St. Gallen als Default 
+    category = st.selectbox("Was suchst du?", ["Museum", "Sport", "Touristenattraktion"])
+    season = st.selectbox("Zu welcher Jahreszeit?", ["Sommer", "Herbst", "Winter", "Frühling"])
+    weather = st.selectbox("Wähle das Wetter aus", ["Sonnig", "Regnerisch"])
     location = st.number_input("Gib deine Postleitzahl ein", value=9000, min_value=1000, max_value=9999, step=1)
 
-    # Dropdown für Wetter
-    weather = st.selectbox("Wähle das Wetter aus", ["Sonnig", "Regnerisch", "Bewölkt"])
-    
     submitted = st.form_submit_button("Vorschläge anzeigen")
-    if submitted:
-        st.write(f"Für die Postleitzahl {location} bei {weather} Wetter, empfehlen wir folgendes:")
 
-        # API-Integration hier
-        if weather == "Sonnig":
-            st.write("Geniesse einen Tag am See!")
-        elif weather == "Regnerisch":
-            st.write("Geh besser nicht an den See")
+
+
+
+
+# API-Integration
+    if submitted:
+        api_url = "https://opendata.myswitzerland.io/v1/attractions"
+        headers = {
+            "x-api-key": "dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y"
+        }
+        response = requests.get(api_url, headers=headers)
+
+
+        
+
+        if response.status_code == 200:
+            attractions = response.json()["data"]
+            # Du könntest hier weitere Logik hinzufügen, um auf die Kategorie oder das Wetter zu filtern
+            for attraction in attractions:
+                # Überprüfe hier, ob die Attraktion den Benutzereingaben entspricht
+                st.write(attraction["name"])
+                st.write(attraction["abstract"])
+                st.image(attraction["photo"])
         else:
-            st.write("Ein Spaziergang im bewölkten Wetter kann erfrischend sein!")
+            st.error("Fehler beim Laden der Attraktionen.")
+
+
+
+
+
+
+
+
+#     "category" kann man vermutlich filtern mit "title": "Museum" im Antwort-JSON
+
+# Seasons wird geprüft, ob die Antwort hier vorhanden ist. Hier sind bspw. alle 4 Seasons drin
+#  "name": "seasons",
+#                     "values": [
+#                         {
+#                             "name": "winter",
+#                             "title": "Winter"
+#                         },
+#                         {
+#                             "name": "spring",
+#                             "title": "Spring"
+#                         },
+#                         {
+#                             "name": "summer",
+#                             "title": "Summer"
+#                         },
+#                         {
+#                             "name": "autumn",
+#                             "title": "Autumn"
+#                         }
+#                     ]
+
+# Wetter am besten mit Regnerisch = indoor und Sonnig = outdoor
+# "name": "indooroutdoorclassifications",
+#                     "values": [
+#                         {
+#                             "name": "outdoor",
+#                             "title": "Outdoor"
+#                         }
+#                     ]
+
+# PLZ keine Ahnung bis jetzt, da nur Koordinaten in API vorhanden sind.
