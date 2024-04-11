@@ -1,5 +1,9 @@
 import streamlit as st
 
+# Token für API-Abragen
+# dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y
+
+
 # To install streamlit, type the following command in the terminal
 # pip install streamlit
 
@@ -25,7 +29,7 @@ st.subheader("Gib deinen Standort und das Wetter ein, und wir schlagen dir vor, 
 # Create a form for user input to make the page cleaner
 with st.form("user_input"):
     # Create a text input for location
-    location = st.text_input("Gib deinen Standort ein")
+    location = st.number_input("Gib deinen Postleitzahl ein")
 
     # Create a dropdown menu with weather options
     weather = st.selectbox("Wähle das Wetter aus", ["Regnerisch", "Sonnig", "Bewölkt"])
