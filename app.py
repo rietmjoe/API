@@ -1,17 +1,21 @@
 import streamlit as st
 
+
+# Streamlit starten
+
 # Token für API-Abragen
 # dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y
 
-
-# To install streamlit, type the following command in the terminal
+# Streamlit installieren mit folgendem Code im Eingabefenster (Rechtsklick auf app.py --> Open in Integrated Terminal)
 # pip install streamlit
 
-# to start the frontpage
+# Hello Page starten (nicht nötig)
 # streamlit hello
 
-# To run the app, type the following command in the terminal
+# Um die Anwendung zu starten, den folgenden Command in das Eingabefenster eingeben. Danach Link anwählen, wenn nicht automatisch geöffnet. 
 # streamlit run app.py
+
+
 
 # Setze die Seitenkonfiguration
 st.set_page_config(page_title="Entdecke lokale Aktivitäten", layout="wide")
