@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import pandas as pd # Für die Darstellung der Koordinaten auf der Karte
 
 
 # Streamlit starten
@@ -40,6 +41,13 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
         category = st.selectbox("Was suchst du?", ["Museum", "Sport", "Touristenattraktion"])
         season = st.selectbox("Zu welcher Jahreszeit?", ["Summer", "Autumn", "Winter", "Spring"])
         suitableFor = st.selectbox("Suitable for:", ["Children", "Group", "Individual", "Family", "Couples", "Womenonly"])
+
+        weatherOptions = {
+            "All": "*",
+            "Sunny": "outdoor",
+            "Rainy": "indoor",
+        }
+        weather = st.selectbox("Weather:", weatherOptions.keys())
         
         geoLocationOptions = {
             "All": "*",
@@ -55,6 +63,8 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
         }
         geoLocation = st.selectbox("Geographical location:", geoLocationOptions.keys())
 
+
+
         location = st.number_input("Gib deine Postleitzahl ein", value=9000, min_value=1000, max_value=9999, step=1)
 
         submitted = st.form_submit_button("Vorschläge anzeigen")
@@ -69,10 +79,19 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
             "x-api-key": "dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y"
         }
 
+        # facet filters (AND-linked), python f-string for variable filtering
+        facet_filters = (
+            f"seasons:{season},"
+            f"suitablefortype:{suitableFor},"
+            f"geographicallocations:{geoLocationOptions[geoLocation]},"
+            f"indooroutdoorclassifications:{weatherOptions[weather]}"
+        )
+
         params = {
-            'facet.filter': f'seasons:{season},suitablefortype:{suitableFor},geographicallocations:{geoLocationOptions[geoLocation]}', # AND-filtered, python f-string for variable filtering
-            #'expand': 'true',                  # Hole vollständige Daten für jede Attraktion
-            'hitsPerPage': '6',               # Maximale Anzahl von Ergebnissen pro Seite
+            'facet.filter': facet_filters, 
+            'expand': 'true',                  # Hole vollständige Daten für jede Attraktion
+            'striphtml': 'true',               # Entferne HTML-Tags aus den Texten
+            'hitsPerPage': '5',               # Maximale Anzahl von Ergebnissen pro Seite
         }
 
         response = requests.get(api_url, headers=headers, params=params)
@@ -80,26 +99,56 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
 
         if response.status_code == 200:
             attractions = response.json()["data"]
-            # Hier weitere Logik hinzufügen, um auf die Kategorie oder das Wetter zu filtern
             for attraction in attractions:
-                    st.subheader(attraction["name"])
+                st.header(attraction["name"])
 
-                    if "abstract" in attraction:
-                        st.write(attraction["abstract"])
-                    else:
-                        st.write("Keine Zusammenfassung verfügbar.")
-                    
-                    if "photo" in attraction:
-                        # Bild zentriert und responsive innerhalb der mittleren Spalte anzeigen
-                        st.image(attraction["photo"], use_column_width=True)
-                    else:
-                        st.write("Kein Foto verfügbar.")
+                if "photo" in attraction:
+                    # Bild zentriert und responsive innerhalb der mittleren Spalte anzeigen
+                    st.image(attraction["photo"], use_column_width=True)
+                else:
+                    st.write("Kein Foto verfügbar.")
 
-                    if "url" in attraction:
-                        # st.write("Weitere Informationen: "+ attraction["url"])
-                        st.link_button("Weitere Informationen", attraction["url"])
-                    else:
-                        st.write("Kein Link verfügbar.")
+                if "abstract" in attraction:
+                    st.write(attraction["abstract"])
+                else:
+                    st.write("Keine Zusammenfassung verfügbar.")
+
+                if "description" in attraction:
+                    st.write(attraction["description"])
+                else:
+                    st.write("Keine Beschreibung verfügbar.")
+                
+                st.subheader("Address")
+                if "address" in attraction and attraction['address']: # Check if address is available
+                    address = attraction['address'][0]
+                    st.write(address.get('name', 'Kein Name verfügbar'))
+                    st.write(f"**Strasse:** {address.get('streetAddress', 'Keine Strasse verfügbar')}")
+                    st.write(f"**PLZ/Ort:** {address.get('postalCode', 'Keine PLZ verfügbar')} {address.get('addressLocality', 'Kein Ort verfügbar')}")
+                    st.write(f"**Land:** {address.get('addressCountry', 'Kein Land verfügbar')}")
+                    st.write(f"**Telefon:** {address.get('telephone', 'Keine Telefonnummer verfügbar')}")
+                    st.write(f"**Email:** {address.get('email', 'Keine E-Mail verfügbar')}")
+                    st.write(f"**Website:** [Link zur Website]({address.get('url', '#')})")
+                else:
+                    st.write("No address available.")
+
+                if "geo" in attraction:
+                    # st.write("Koordinaten: ", attraction["geo"]["latitude"], attraction["geo"]["longitude"])
+                    data = {
+                        "latitude": [attraction["geo"]["latitude"]],
+                        "longitude": [attraction["geo"]["longitude"]],
+                        "name": attraction["name"]
+                    }
+                    df = pd.DataFrame(data)
+                    st.map(df)
+                else:
+                    st.write("Keine Koordinaten verfügbar.")
+
+                if "url" in attraction:
+                    st.link_button("More informations", attraction["url"])
+                else:
+                    st.write("Kein Link verfügbar.")
+
+                st.divider()
 
         else:
             st.error("Fehler beim Laden der Attraktionen.")
