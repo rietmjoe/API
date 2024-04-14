@@ -34,8 +34,8 @@ with col2:
 # Benutzereingaben
 with st.form("user_input"):
     category = st.selectbox("Was suchst du?", ["Museum", "Sport", "Touristenattraktion"])
-    season = st.selectbox("Zu welcher Jahreszeit?", ["Sommer", "Herbst", "Winter", "Frühling"])
-    weather = st.selectbox("Wähle das Wetter aus", ["Sonnig", "Regnerisch"])
+    season = st.selectbox("Zu welcher Jahreszeit?", ["Summer", "Autumn", "Winter", "Spring"])
+    suitableFor = st.selectbox("Suitable for:", ["Children", "Group", "Individual", "Family", "Couples"])
     location = st.number_input("Gib deine Postleitzahl ein", value=9000, min_value=1000, max_value=9999, step=1)
 
     submitted = st.form_submit_button("Vorschläge anzeigen")
@@ -45,26 +45,44 @@ with st.form("user_input"):
 
 
 # API-Integration
-    if submitted:
-        api_url = "https://opendata.myswitzerland.io/v1/attractions"
-        headers = {
-            "x-api-key": "dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y"
-        }
-        response = requests.get(api_url, headers=headers)
+if submitted:
+    api_url = "https://opendata.myswitzerland.io/v1/attractions"
+    headers = {
+        "x-api-key": "dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y"
+    }
+
+    params = {
+        'facet.filter': f'seasons:{season},suitablefortype:{suitableFor}', # AND-filtered, python f-string for variable filtering
+        #'expand': 'true',                  # Hole vollständige Daten für jede Attraktion
+        'hitsPerPage': '6',               # Maximale Anzahl von Ergebnissen pro Seite
+    }
+
+    response = requests.get(api_url, headers=headers, params=params)
 
 
-        
-
-        if response.status_code == 200:
-            attractions = response.json()["data"]
-            # Du könntest hier weitere Logik hinzufügen, um auf die Kategorie oder das Wetter zu filtern
-            for attraction in attractions:
-                # Überprüfe hier, ob die Attraktion den Benutzereingaben entspricht
-                st.write(attraction["name"])
+    if response.status_code == 200:
+        attractions = response.json()["data"]
+        # Hier weitere Logik hinzufügen, um auf die Kategorie oder das Wetter zu filtern
+        for attraction in attractions:
+            st.write(attraction["name"])
+            
+            if "abstract" in attraction:
                 st.write(attraction["abstract"])
+            else:
+                st.write("Keine Zusammenfassung verfügbar.")
+
+            if "description" in attraction:
+                st.write(attraction["description"])
+            else:
+                st.write("Keine Beschreibung verfügbar.")
+            
+            if "photo" in attraction:
                 st.image(attraction["photo"])
-        else:
-            st.error("Fehler beim Laden der Attraktionen.")
+            else:
+                st.write("Kein Foto verfügbar.")
+
+    else:
+        st.error("Fehler beim Laden der Attraktionen.")
 
 
 
