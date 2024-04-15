@@ -19,7 +19,7 @@ import pandas as pd # Für die Darstellung der Koordinaten auf der Karte
 
 
 # Setze die Seitenkonfiguration
-st.set_page_config(page_title="Entdecke lokale Aktivitäten", layout="wide")
+st.set_page_config(page_title="Discover local activities", layout="wide")
 
 # Header-Bild
 st.image("berg2.jpg", use_column_width=True)
@@ -33,13 +33,13 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
     with col1:
         st.image("st_logo.png", width=50)  
     with col2:
-        st.title("Entdecke, was du in deiner Nähe unternehmen kannst!")
-        st.subheader("Gib deinen Standort und das Wetter ein, und wir schlagen dir vor, was du unternehmen kannst.")
+        st.title("Discover what you can do in your area!")
+        st.subheader("Please enter the relevant information below and we will suggest what you can do.")
 
     # Benutzereingaben
     with st.form("user_input"):
-        category = st.selectbox("Was suchst du?", ["Museum", "Sport", "Touristenattraktion"])
-        season = st.selectbox("Zu welcher Jahreszeit?", ["Summer", "Autumn", "Winter", "Spring"])
+        category = st.selectbox("What are you looking for?", ["Museum", "Sport", "Tourist Attraction"])
+        season = st.selectbox("At what time of year?", ["Summer", "Autumn", "Winter", "Spring"])
         suitableFor = st.selectbox("Suitable for:", ["Children", "Group", "Individual", "Family", "Couples", "Womenonly"])
 
         weatherOptions = {
@@ -63,12 +63,9 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
         }
         geoLocation = st.selectbox("Geographical location:", geoLocationOptions.keys())
 
+        location = st.number_input("Enter your postal code.", value=9000, min_value=1000, max_value=9999, step=1)
 
-
-        location = st.number_input("Gib deine Postleitzahl ein", value=9000, min_value=1000, max_value=9999, step=1)
-
-        submitted = st.form_submit_button("Vorschläge anzeigen")
-
+        submitted = st.form_submit_button("Show suggestions")
 
 
 
@@ -111,23 +108,23 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
                 if "abstract" in attraction:
                     st.write(attraction["abstract"])
                 else:
-                    st.write("Keine Zusammenfassung verfügbar.")
+                    st.write("No summary available.")
 
                 if "description" in attraction:
                     st.write(attraction["description"])
                 else:
-                    st.write("Keine Beschreibung verfügbar.")
+                    st.write("No description available.")
                 
                 st.subheader("Address")
                 if "address" in attraction and attraction['address']: # Check if address is available
                     address = attraction['address'][0]
-                    st.write(address.get('name', 'Kein Name verfügbar'))
-                    st.write(f"**Strasse:** {address.get('streetAddress', 'Keine Strasse verfügbar')}")
-                    st.write(f"**PLZ/Ort:** {address.get('postalCode', 'Keine PLZ verfügbar')} {address.get('addressLocality', 'Kein Ort verfügbar')}")
-                    st.write(f"**Land:** {address.get('addressCountry', 'Kein Land verfügbar')}")
-                    st.write(f"**Telefon:** {address.get('telephone', 'Keine Telefonnummer verfügbar')}")
-                    st.write(f"**Email:** {address.get('email', 'Keine E-Mail verfügbar')}")
-                    st.write(f"**Website:** [Link zur Website]({address.get('url', '#')})")
+                    st.write(address.get('name', 'No name available'))
+                    st.write(f"**Street:** {address.get('streetAddress', 'No street available')}")
+                    st.write(f"**Postcode/location:** {address.get('postalCode', 'No postal code available')} {address.get('addressLocality', 'No location available')}")
+                    st.write(f"**Country:** {address.get('addressCountry', 'No country available')}")
+                    st.write(f"**Telephone:** {address.get('telephone', 'No phone number available')}")
+                    st.write(f"**Email:** {address.get('email', 'No email available')}")
+                    st.write(f"**Website:** [Link to the website]({address.get('url', '#')})")
                 else:
                     st.write("No address available.")
 
@@ -141,16 +138,16 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
                     df = pd.DataFrame(data)
                     st.map(df)
                 else:
-                    st.write("Keine Koordinaten verfügbar.")
+                    st.write("No coordinates available.")
 
                 if "url" in attraction:
                     st.link_button("More informations", attraction["url"])
                 else:
-                    st.write("Kein Link verfügbar.")
+                    st.write("No link available")
 
                 st.divider()
 
         else:
-            st.error("Fehler beim Laden der Attraktionen.")
+            st.error("Error loading the attractions.")
 
 
