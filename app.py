@@ -79,7 +79,7 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
             "x-api-key": "dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y"
         }
 
-        # facet filters (AND-linked), python f-string for variable filtering
+        # facet filters (AND-linked), python f-string for variable filtering (Filterzeichenkette für die API-Abfrage)
         facet_filters = (
             f"seasons:{season},"
             f"suitablefortype:{suitableFor},"
@@ -154,42 +154,3 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
             st.error("Fehler beim Laden der Attraktionen.")
 
 
-
-
-
-
-
-
-#     "category" kann man vermutlich filtern mit "title": "Museum" im Antwort-JSON
-
-# Seasons wird geprüft, ob die Antwort hier vorhanden ist. Hier sind bspw. alle 4 Seasons drin
-#  "name": "seasons",
-#                     "values": [
-#                         {
-#                             "name": "winter",
-#                             "title": "Winter"
-#                         },
-#                         {
-#                             "name": "spring",
-#                             "title": "Spring"
-#                         },
-#                         {
-#                             "name": "summer",
-#                             "title": "Summer"
-#                         },
-#                         {
-#                             "name": "autumn",
-#                             "title": "Autumn"
-#                         }
-#                     ]
-
-# Wetter am besten mit Regnerisch = indoor und Sonnig = outdoor
-# "name": "indooroutdoorclassifications",
-#                     "values": [
-#                         {
-#                             "name": "outdoor",
-#                             "title": "Outdoor"
-#                         }
-#                     ]
-
-# PLZ keine Ahnung bis jetzt, da nur Koordinaten in API vorhanden sind.
