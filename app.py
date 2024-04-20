@@ -80,6 +80,7 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
         # Sunny oder Rainy anwählen, outdoor oder indoor wird an die API übergeben
         weather = st.selectbox("Weather:", weatherOptions.keys())
 
+        # Werte in Frontend = "Along the grand tour", Werte in API = "alongthegrandtour"
         geoLocationOptions = {
             "*": "*",
             "Along the grand tour": "alongthegrandtour",
