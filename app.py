@@ -17,6 +17,10 @@ import pandas as pd  # Für die Darstellung der Koordinaten auf der Karte
 # Um die Anwendung zu starten, den folgenden Command in das Eingabefenster eingeben. Danach Link anwählen, wenn nicht automatisch geöffnet.
 # streamlit run app.py
 
+# Konsole stoppen
+# Strg + C in der Konsole
+
+
 # Streamlit Documentation https://docs.streamlit.io/develop/api-reference
 
 
