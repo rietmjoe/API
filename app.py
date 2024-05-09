@@ -84,20 +84,20 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
         # Sunny oder Rainy anwählen, outdoor oder indoor wird an die API übergeben
         weather = st.selectbox("Weather:", weatherOptions.keys())
 
-        # Werte in Frontend = "Along the grand tour", Werte in API = "alongthegrandtour"
-        geoLocationOptions = {
-            "*": "*",
-            "Along the grand tour": "alongthegrandtour",
-            "In the city": "inthecity",
-            "In the mountains": "inthemountains",
-            "In the country side": "inthecountryside",
-            "In the alpine mountains": "inthealpinemountains",
-            "At the lake": "atthelake",
-            "By the river": "bytheriver",
-            "At the forest": "attheforest",
-            "Central location": "centrallocation",
-        }
-        geoLocation = st.selectbox("Geographical location:", geoLocationOptions.keys())
+        # # Werte in Frontend = "Along the grand tour", Werte in API = "alongthegrandtour"
+        # geoLocationOptions = {
+        #     "*": "*",
+        #     "Along the grand tour": "alongthegrandtour",
+        #     "In the city": "inthecity",
+        #     "In the mountains": "inthemountains",
+        #     "In the country side": "inthecountryside",
+        #     "In the alpine mountains": "inthealpinemountains",
+        #     "At the lake": "atthelake",
+        #     "By the river": "bytheriver",
+        #     "At the forest": "attheforest",
+        #     "Central location": "centrallocation",
+        # }
+        # geoLocation = st.selectbox("Geographical location:", geoLocationOptions.keys())
 
         postalCode = st.number_input(
             "Enter your postal code.",
@@ -125,122 +125,123 @@ with col2:  # Verwende nur die mittlere Spalte für die Anzeige der Inhalte
     def get_coordinates_from_postcode(postcode):
         url = "https://nominatim.openstreetmap.org/search"
         params = {"postalcode": postcode, "country": "Switzerland", "format": "json"}
-
-        # Get Anfrage an die API mit definierten Parametern
         response = requests.get(url, params=params)
-        # Wenn Abfrage erfolgreich, dann Daten auslesen
         if response.status_code == 200:
-            # Extrahiere JSON-Daten aus der Antwort und speichere sie in der Variable data
             data = response.json()
             if data:
-                # Extrahiere Breiten- und Längengrad aus den erhaltenen Daten
                 latitude = data[0]["lat"]
                 longitude = data[0]["lon"]
-                return latitude, longitude
+                return latitude, longitude  # Rückgabe der Koordinaten als Tupel
             else:
-                return "No data found for this postcode."
-        # Sonst Fehlermeldung
+                return None, None  # Keine Daten gefunden, gebe None zurück
         else:
-            return "Error retrieving coordinates."
+            return None, None  # Fehler bei der API-Abfrage, gebe None zurück
 
-    # Wenn der Button "Show suggestions" gedrückt wurde, dann führe die API-Abfrage durch
-    if submitted:
-        api_url = "https://opendata.myswitzerland.io/v1/attractions"
-        # Persönlicher API-Key für die Abfrage
-        headers = {"x-api-key": "dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y"}
+    # Abfrage und Prüfung der Koordinaten
+    lat, lon = get_coordinates_from_postcode(postalCode)
+    if lat is None or lon is None:
+        st.error("No coordinates found for the given postal code. Try another one.")
+    else:
 
-        # facet filters (AND-linked), python f-string for variable filtering (Filterzeichenkette für die API-Abfrage)
-        facet_filters = (
-            f"experiencetype:{experienceType},"
-            f"seasons:{season},"
-            f"suitablefortype:{suitableFor},"
-            f"geographicallocations:{geoLocationOptions[geoLocation]},"
-            f"indooroutdoorclassifications:{weatherOptions[weather]}"
-        )
 
-        # GET-Abfrage für die Koordinaten basierend auf PLZ (Siehe Funktion oben)
-        lat, lon = get_coordinates_from_postcode(
-            postalCode
-        )  # Koordinaten für ausgewählte PLZ abrufen, speichern in lat und lon
-        coordsAndRadius = f"{lat},{lon},{searchRadius}"
+        
 
-        params = {
-            "facet.filter": facet_filters,
-            "geo.dist": coordsAndRadius,
-            "expand": "true",  # Hole vollständige Daten für jede Attraktion
-            "striphtml": "true",  # Entferne HTML-Tags aus den Texten
-            "hitsPerPage": hitAmount,  # Maximale Anzahl von Ergebnissen pro Seite basierend auf Input vorhin
-        }
+        # Wenn der Button "Show suggestions" gedrückt wurde, dann führe die API-Abfrage durch
+        if submitted:
+            api_url = "https://opendata.myswitzerland.io/v1/attractions"
+            # Persönlicher API-Key für die Abfrage
+            headers = {"x-api-key": "dPhbYjYBIcaVh4KzZFNn99qMlGQrQmc96AhS4E9Y"}
 
-        # GET-Abfrage an die API mit den definierten Parametern, URL sowie API-Key
-        response = requests.get(api_url, headers=headers, params=params)
+            # facet filters (AND-linked), python f-string for variable filtering (Filterzeichenkette für die API-Abfrage)
+            facet_filters = (
+                f"experiencetype:{experienceType},"
+                f"seasons:{season},"
+                f"suitablefortype:{suitableFor},"
+                # f"geographicallocations:{geoLocationOptions[geoLocation]},"
+                f"indooroutdoorclassifications:{weatherOptions[weather]}"
+            )
 
-        if response.status_code == 200:
-            # JSON Daten extrahieren und in Variable attractions speichern
-            attractions = response.json()["data"]
+            # GET-Abfrage für die Koordinaten basierend auf PLZ (Siehe Funktion oben)
+            lat, lon = get_coordinates_from_postcode(postalCode)  # Koordinaten für ausgewählte PLZ abrufen, speichern in lat und lon
+            coordsAndRadius = f"{lat},{lon},{searchRadius}"
 
-            # For-Schleife für die Anzeige der Attraktionen
-            for attraction in attractions:
-                st.header(attraction["name"])
+            params = {
+                "facet.filter": facet_filters,
+                "geo.dist": coordsAndRadius,
+                "expand": "true",  # Hole vollständige Daten für jede Attraktion
+                "striphtml": "true",  # Entferne HTML-Tags aus den Texten
+                "hitsPerPage": hitAmount,  # Maximale Anzahl von Ergebnissen pro Seite basierend auf Input vorhin
+            }
 
-                if "photo" in attraction:
-                    # Bild zentriert und responsive innerhalb der mittleren Spalte anzeigen
-                    st.image(attraction["photo"], use_column_width=True)
-                else:
-                    st.write("Kein Foto verfügbar.")
+            # GET-Abfrage an die API mit den definierten Parametern, URL sowie API-Key
+            response = requests.get(api_url, headers=headers, params=params)
 
-                if "abstract" in attraction:
-                    st.write(attraction["abstract"])
-                else:
-                    st.write("No summary available.")
+            if response.status_code == 200:
+                # JSON Daten extrahieren und in Variable attractions speichern
+                attractions = response.json()["data"]
 
-                if "description" in attraction:
-                    st.write(attraction["description"])
-                else:
-                    st.write("No description available.")
+                # For-Schleife für die Anzeige der Attraktionen
+                for attraction in attractions:
+                    st.header(attraction["name"])
 
-                if (
-                    "address" in attraction and attraction["address"]
-                ):  # Check if address is available
-                    address = attraction["address"][0]
-                    st.subheader("Address")
-                    st.write(address.get("name", "No name available"))
-                    st.write(
-                        f"**Street:** {address.get('streetAddress', 'No street available')}"
-                    )
-                    st.write(
-                        f"**Postcode/location:** {address.get('postalCode', 'No postal code available')} {address.get('addressLocality', 'No location available')}"
-                    )
-                    st.write(
-                        f"**Country:** {address.get('addressCountry', 'No country available')}"
-                    )
-                    st.write(
-                        f"**Telephone:** {address.get('telephone', 'No phone number available')}"
-                    )
-                    st.write(f"**Email:** {address.get('email', 'No email available')}")
-                    st.write(
-                        f"**Website:** [Link to the website]({address.get('url', '#')})"
-                    )
-                else:
-                    st.write("No address available.")
+                    if "photo" in attraction:
+                        # Bild zentriert und responsive innerhalb der mittleren Spalte anzeigen
+                        st.image(attraction["photo"], use_column_width=True)
+                    else:
+                        st.write("No Picture available.")
 
-                if "geo" in attraction:
-                    data = {
-                        "latitude": [attraction["geo"]["latitude"]],
-                        "longitude": [attraction["geo"]["longitude"]],
-                    }
-                    df = pd.DataFrame(data)
-                    st.map(df)
-                else:
-                    st.write("No coordinates available.")
+                    if "abstract" in attraction:
+                        st.write(attraction["abstract"])
+                    else:
+                        st.write("No summary available.")
 
-                if "url" in attraction:
-                    st.link_button("More informations", attraction["url"])
-                else:
-                    st.write("No link available")
+                    if "description" in attraction:
+                        st.write(attraction["description"])
+                    else:
+                        st.write("No description available.")
 
-                # Trennlinie zwischen den Attraktionen
-                st.divider()
+                    if (
+                        "address" in attraction and attraction["address"]
+                    ):  # Check if address is available
+                        address = attraction["address"][0]
+                        st.subheader("Address")
+                        st.write(address.get("name", "No name available"))
+                        st.write(
+                            f"**Street:** {address.get('streetAddress', 'No street available')}"
+                        )
+                        st.write(
+                            f"**Postcode/location:** {address.get('postalCode', 'No postal code available')} {address.get('addressLocality', 'No location available')}"
+                        )
+                        st.write(
+                            f"**Country:** {address.get('addressCountry', 'No country available')}"
+                        )
+                        st.write(
+                            f"**Telephone:** {address.get('telephone', 'No phone number available')}"
+                        )
+                        st.write(f"**Email:** {address.get('email', 'No email available')}")
+                        st.write(
+                            f"**Website:** [Link to the website]({address.get('url', '#')})"
+                        )
+                    else:
+                        st.write("No address available.")
 
-        else:
-            st.error("Error loading the attractions.")
+                    if "geo" in attraction:
+                        data = {
+                            "latitude": [attraction["geo"]["latitude"]],
+                            "longitude": [attraction["geo"]["longitude"]],
+                        }
+                        df = pd.DataFrame(data)
+                        st.map(df)
+                    else:
+                        st.write("No coordinates available.")
+
+                    if "url" in attraction:
+                        st.link_button("More informations", attraction["url"])
+                    else:
+                        st.write("No link available")
+
+                    # Trennlinie zwischen den Attraktionen
+                    st.divider()
+
+            else:
+                st.error("Error loading the attractions.")
